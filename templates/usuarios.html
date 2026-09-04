@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Gestión de Usuarios</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static',
+          filename='css/styles.css') }}">
+</head>
+
+<body>
+
+<div class="dashboard-wrapper">
+
+    {% include 'components/header.html' %}
+
+    <main class="content">
+
+        <div class="page-header">
+
+            <h1>
+                Gestión de Usuarios
+            </h1>
+
+            <p>
+                Administración de usuarios del sistema.
+            </p>
+
+        </div>
+
+        <div class="toolbar">
+
+            <a href="{{ url_for('usuarios.agregar_usuario') }}"
+               class="btn btn-primary">
+
+                Agregar Usuario
+
+            </a>
+
+        </div>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Nombre</th>
+                        <th>Usuario</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for usuario in usuarios %}
+
+                    <tr>
+
+                        <td>{{ usuario.nombre }}</td>
+
+                        <td>{{ usuario.usuario }}</td>
+
+                        <td>{{ usuario.rol }}</td>
+
+                        <td>
+
+                            {% if usuario.estado %}
+
+                                <span class="badge-success">
+                                    ACTIVO
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge-pending">
+                                    INACTIVO
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <div class="actions">
+
+                                <a href="{{ url_for('usuarios.ver_usuario',
+                                    id=usuario.id_usuario) }}"
+                                    class="btn btn-success">
+
+                                    Ver
+
+                                </a>
+
+                                <a href="{{ url_for('usuarios.editar_usuario',
+                                    id=usuario.id_usuario) }}"
+                                    class="btn btn-primary">
+
+                                    Editar
+
+                                </a>
+
+                                <a href="{{ url_for('usuarios.eliminar_usuario',
+                                    id=usuario.id_usuario) }}"
+                                    class="btn btn-danger"
+                                    onclick="return confirm('¿Desea eliminar este usuario?')">
+
+                                    Eliminar
+
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="buttons-center">
+
+            <a href="{{ url_for('dashboard') }}"
+               class="btn btn-primary">
+
+                Regresar
+
+            </a>
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,75 @@
+<header class="topbar">
+
+        <div class="logo">
+
+            <span class="logo-icon">
+                🥖
+            </span>
+
+            <div>
+
+                <h2>
+                    Distribuidora San Francisco
+                </h2>
+
+                <small>
+                    Sistema Logístico
+                </small>
+
+            </div>
+
+        </div>
+
+        <nav class="menu">
+
+            <a href="{{ url_for('usuarios.listar_usuarios') }}"
+               class="menu-item">
+                Usuarios
+            </a>
+
+            <a href="#"
+               class="menu-item">
+                Revendedores
+            </a>
+
+            <a href="#"
+               class="menu-item">
+                Pedidos
+            </a>
+
+            <a href="#"
+               class="menu-item">
+                Inventario
+            </a>
+
+            <a href="#"
+               class="menu-item">
+                Rutas
+            </a>
+
+        </nav>
+
+        <div class="user-panel">
+
+            <div class="user-box">
+
+                <strong>
+                    {{ session['nombre'] }}
+                </strong>
+
+                <small>
+                    {{ session['rol'] }}
+                </small>
+
+            </div>
+
+            <a href="{{ url_for('logout') }}"
+               class="btn btn-danger">
+
+                Cerrar Sesión
+
+            </a>
+
+        </div>
+
+    </header>

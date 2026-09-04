@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema Logístico Distribuidora</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+
+<body class="login-body">
+
+    <div class="login-container">
+
+        <!-- PANEL IZQUIERDO -->
+
+        <div class="login-left">
+
+            <div class="logo-box">
+                🥖
+            </div>
+
+            <h1>
+                Distribuidora San Francisco
+            </h1>
+            <h1>
+                Sistema Logístico
+            </h1>
+
+            <h3>
+                Control de Producción, Inventario y Distribución
+            </h3>
+
+            <ul>
+
+                <li>
+                    Gestión de pedidos
+                </li>
+
+                <li>
+                    Control de productos terminados
+                </li>
+
+                <li>
+                    Administración de materias primas
+                </li>
+
+                <li>
+                    Rutas de distribución
+                </li>
+
+                <li>
+                    Monitoreo de alertas
+                </li>
+
+            </ul>
+
+        </div>
+
+        <!-- PANEL DERECHO -->
+
+        <div class="login-right">
+
+            <div class="login-card">
+
+                <h2>
+                    Inicio de Sesión
+                </h2>
+
+                <p class="login-subtitle">
+                    Ingrese sus credenciales para continuar
+                </p>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+
+                        {% for category, message in messages %}
+
+                            <div class="alert-danger">
+                                {{ message }}
+                            </div>
+
+                        {% endfor %}
+
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST">
+
+                    <div class="form-group">
+
+                        <label>
+                            Usuario
+                        </label>
+
+                        <input
+                            type="text"
+                            name="usuario"
+                            placeholder="Ingrese su usuario"
+                            required>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>
+                            Contraseña
+                        </label>
+
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Ingrese su contraseña"
+                            required>
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary btn-login">
+
+                        Iniciar Sesión
+
+                    </button>
+
+                </form>
+
+                <div class="login-info">
+
+                    Al autenticarse será redirigido según el rol:
+                    Administrador, Producción, Despacho o Sucursal.
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

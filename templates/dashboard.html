@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Panel Principal - Distribuidora</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static',
+          filename='css/styles.css') }}">
+</head>
+
+<body>
+
+<div class="dashboard-wrapper">
+
+    {% include 'components/header.html' %}
+
+    <main class="content">
+
+        <div class="page-header">
+
+            <h1>
+                Panel Principal
+            </h1>
+
+            <p>
+                Resumen general de las operaciones de la distribuidora.
+            </p>
+
+        </div>
+
+        <!-- =====================================
+             INDICADORES
+        ====================================== -->
+
+        <section class="summary">
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    Pedidos Pendientes
+                </div>
+
+                <div class="summary-value">
+                    {{ pedidos_pendientes }}
+                </div>
+
+            </div>
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    En Producción
+                </div>
+
+                <div class="summary-value">
+                    {{ pedidos_produccion }}
+                </div>
+
+            </div>
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    Rutas Activas
+                </div>
+
+                <div class="summary-value">
+                    {{ rutas_activas }}
+                </div>
+
+            </div>
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    Alertas Pendientes
+                </div>
+
+                <div class="summary-value">
+                    {{ alertas_pendientes }}
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- =====================================
+             ALERTAS DEL SISTEMA
+        ====================================== -->
+
+        <section class="alerts-section">
+
+            <div class="section-title">
+
+                Alertas del Sistema
+
+            </div>
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Descripción
+                            </th>
+
+                            <th>
+                                Estado
+                            </th>
+
+                            <th>
+                                Acción
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for alerta in alertas %}
+
+                        <tr>
+
+                            <td>
+                                {{ alerta.descripcion }}
+                            </td>
+
+                            <td>
+
+                                {% if alerta.estado == 'PENDIENTE' %}
+
+                                    <span class="badge-pending">
+                                        PENDIENTE
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge-success">
+                                        ATENDIDA
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {% if alerta.estado == 'PENDIENTE' %}
+
+                                <a href="{{ url_for('solucionar_alerta',
+                                    id_alerta=alerta.id_alerta) }}"
+                                   class="btn btn-success">
+
+                                    Solucionar
+
+                                </a>
+
+                                {% else %}
+
+                                    —
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>

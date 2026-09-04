@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Editar Usuario</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static',
+          filename='css/styles.css') }}">
+</head>
+
+<body>
+
+<div class="dashboard-wrapper">
+
+    {% include 'components/header.html' %}
+
+    <main class="content">
+
+        <div class="page-header">
+
+            <h1>
+                Modificar Usuario
+            </h1>
+
+            <p>
+                Actualización de información de usuario.
+            </p>
+
+        </div>
+
+        <form method="POST">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>
+                        Nombre Completo
+                    </label>
+
+                    <input type="text"
+                           name="nombre"
+                           value="{{ usuario.nombre }}"
+                           required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Usuario
+                    </label>
+
+                    <input type="text"
+                           name="usuario"
+                           value="{{ usuario.usuario }}"
+                           required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Nueva Contraseña
+                    </label>
+
+                    <input type="password"
+                           name="contrasena">
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Confirmar Contraseña
+                    </label>
+
+                    <input type="password"
+                           name="confirmar">
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Rol
+                    </label>
+
+                    <select name="rol">
+
+                        <option value="ADMINISTRADOR"
+                        {% if usuario.rol == 'ADMINISTRADOR' %}
+                        selected
+                        {% endif %}>
+                            ADMINISTRADOR
+                        </option>
+
+                        <option value="SUCURSAL"
+                        {% if usuario.rol == 'SUCURSAL' %}
+                        selected
+                        {% endif %}>
+                            SUCURSAL
+                        </option>
+
+                        <option value="PRODUCCION"
+                        {% if usuario.rol == 'PRODUCCION' %}
+                        selected
+                        {% endif %}>
+                            PRODUCCION
+                        </option>
+
+                        <option value="DESPACHO"
+                        {% if usuario.rol == 'DESPACHO' %}
+                        selected
+                        {% endif %}>
+                            DESPACHO
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Estado
+                    </label>
+
+                    <select name="estado">
+
+                        <option value="1"
+                        {% if usuario.estado %}
+                        selected
+                        {% endif %}>
+                            Activo
+                        </option>
+
+                        <option value="0"
+                        {% if not usuario.estado %}
+                        selected
+                        {% endif %}>
+                            Inactivo
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="buttons">
+
+                <button type="submit"
+                        class="btn btn-success">
+
+                    Guardar
+
+                </button>
+
+                <a href="{{ url_for('usuarios.listar_usuarios') }}"
+                   class="btn btn-danger">
+
+                    Cancelar
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </main>
+
+</div>
+
+</body>
+</html>

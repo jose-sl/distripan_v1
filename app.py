@@ -14,6 +14,7 @@ from database import get_connection
 from routes.usuarios import usuarios_bp
 from routes.revendedores import revendedores_bp
 from routes.pedidos import pedidos_bp
+from routes.inventario import inventario_bp
 
 app = Flask(__name__)
 
@@ -26,6 +27,7 @@ app.secret_key = "distribuidora_secret_key"
 app.register_blueprint(usuarios_bp)
 app.register_blueprint(revendedores_bp)
 app.register_blueprint(pedidos_bp)
+app.register_blueprint(inventario_bp)
 
 # =====================================================
 # LOGIN

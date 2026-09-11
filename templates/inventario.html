@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Gestión de Inventario
+    </title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static',
+          filename='css/styles.css') }}">
+</head>
+
+<body>
+
+<div class="dashboard-wrapper">
+
+    {% include 'components/header.html' %}
+
+    <main class="content">
+
+        <div class="page-header">
+
+            <h1>
+                Gestión de Inventario
+            </h1>
+
+            <p>
+                Control de productos terminados y materias primas.
+            </p>
+
+        </div>
+
+        <!-- =====================================
+             PRODUCTOS TERMINADOS
+        ====================================== -->
+
+        <div class="section-title">
+            Productos Terminados
+        </div>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Nombre</th>
+                        <th>Cantidad</th>
+                        <th>Producto Solicitado</th>
+                        <th>Producido</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for producto in productos %}
+
+                    <tr>
+
+                        <td>
+                            {{ producto.nombre }}
+                        </td>
+
+                        <td>
+                            {{ producto.stock_actual }}
+                        </td>
+
+                        <td>
+                            {{ producto.solicitado }}
+                        </td>
+
+                        <td>
+
+                            <form method="POST"
+                                  action="{{ url_for(
+                                  'inventario.actualizar_producto',
+                                  id=producto.id_producto) }}">
+
+                                <div class="actions">
+
+                                    <input type="number"
+                                           name="cantidad"
+                                           min="0"
+                                           required>
+
+                                    <button type="submit"
+                                            class="btn btn-success">
+
+                                        Actualizar
+
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="buttons-center">
+
+            <a href="{{ url_for(
+                'inventario.limpiar_inventario') }}"
+               class="btn btn-danger">
+
+                Limpiar
+
+            </a>
+
+        </div>
+
+        <!-- =====================================
+             MATERIAS PRIMAS
+        ====================================== -->
+
+        <div class="section-title">
+
+            Materias Primas
+
+        </div>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Nombre</th>
+                        <th>Unidad</th>
+                        <th>Cantidad</th>
+                        <th>Cantidad Requerida</th>
+                        <th>Nuevo</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for materia in materias %}
+
+                    <tr>
+
+                        <td>
+                            {{ materia.nombre }}
+                        </td>
+
+                        <td>
+                            {{ materia.unidad_medida }}
+                        </td>
+
+                        <td>
+                            {{ materia.stock_actual }}
+                        </td>
+
+                        <td>
+                            {{ "%.2f"|format(
+                                materia.requerido
+                            ) }}
+                        </td>
+
+                        <td>
+
+                            <form method="POST"
+                                  action="{{ url_for(
+                                  'inventario.actualizar_materia',
+                                  id=materia.id_materia) }}">
+
+                                <div class="actions">
+
+                                    <input type="number"
+                                           step="0.01"
+                                           min="0"
+                                           name="cantidad"
+                                           required>
+
+                                    <button type="submit"
+                                            class="btn btn-success">
+
+                                        Actualizar
+
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="buttons-center">
+
+            <a href="{{ url_for(
+                'inventario.iniciar_produccion') }}"
+               class="btn btn-primary">
+
+                Iniciar Producción
+
+            </a>
+
+        </div>
+
+        <div class="buttons-center">
+
+            <a href="{{ url_for('dashboard') }}"
+               class="btn btn-primary">
+
+                Regresar
+
+            </a>
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>

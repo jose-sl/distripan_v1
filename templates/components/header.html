@@ -47,7 +47,7 @@
 
             {% if session['rol'] == 'ADMINISTRADOR'  or session['rol'] == 'PRODUCCION' %}
 
-                <a href="#"
+                <a href="{{ url_for('inventario.inventario') }}"
                    class="menu-item">
                     Inventario
                 </a>

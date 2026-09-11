@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Registrar Pedido</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static',
+          filename='css/styles.css') }}">
+</head>
+
+<body>
+
+<div class="dashboard-wrapper">
+
+    {% include 'components/header.html' %}
+
+    <main class="content">
+
+        <div class="page-header">
+
+            <h1>Registrar Pedido</h1>
+
+            <p>
+                Ingreso de pedidos para revendedores.
+            </p>
+
+        </div>
+
+
+        <form method="POST"
+              id="formPedido">
+
+
+            <!-- ==================================================
+                 REVENDEDOR
+                 ================================================== -->
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="id_revendedor">
+                        Revendedor
+                    </label>
+
+                    <select
+                        name="id_revendedor"
+                        id="id_revendedor"
+                        required>
+
+                        <option value="">
+                            Seleccione un revendedor
+                        </option>
+
+                        {% for revendedor in revendedores %}
+
+                        <option
+                            value="{{ revendedor.id_revendedor }}">
+
+                            {{ revendedor.nombre }}
+
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 PRODUCTOS
+                 ================================================== -->
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Producto
+                            </th>
+
+                            <th>
+                                Precio Unitario
+                            </th>
+
+                            <th>
+                                Cantidad
+                            </th>
+
+                            <th>
+                                Subtotal
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for producto in productos %}
+
+                        <tr>
+
+                            <!-- Producto -->
+
+                            <td>
+
+                                {{ producto.nombre }}
+
+                                <input
+                                    type="hidden"
+                                    name="id_producto[]"
+                                    value="{{ producto.id_producto }}">
+
+                            </td>
+
+
+                            <!-- Precio -->
+
+                            <td>
+
+                                Q
+                                {{ "%.2f"|format(producto.precio) }}
+
+                                <input
+                                    type="hidden"
+                                    class="precio-unitario"
+                                    value="{{ producto.precio }}">
+
+                            </td>
+
+
+                            <!-- Cantidad -->
+
+                            <td>
+
+                                <input
+                                    type="number"
+                                    name="cantidad[]"
+                                    class="cantidad-input"
+                                    min="0"
+                                    step="1"
+                                    value="0">
+
+                            </td>
+
+
+                            <!-- Subtotal -->
+
+                            <td>
+
+                                Q
+
+                                <span class="subtotal">
+                                    0.00
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- ==================================================
+                 TOTAL
+                 ================================================== -->
+
+            <div style="
+                display:flex;
+                justify-content:flex-end;
+                margin-top:25px;
+            ">
+
+                <div style="
+                    width:300px;
+                ">
+
+                    <div class="form-group">
+
+                        <label for="totalPedido">
+                            Total del Pedido
+                        </label>
+
+                        <input
+                            type="text"
+                            id="totalPedido"
+                            value="Q 0.00"
+                            readonly>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 BOTONES
+                 ================================================== -->
+
+            <div class="buttons">
+
+                <button
+                    type="submit"
+                    class="btn btn-success">
+
+                    Guardar
+
+                </button>
+
+
+                <a
+                    href="{{ url_for('pedidos.listar_pedidos') }}"
+                    class="btn btn-danger">
+
+                    Cancelar
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </main>
+
+</div>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        const cantidades =
+            document.querySelectorAll(
+                ".cantidad-input"
+            );
+
+
+        function calcularTotal() {
+
+            let total = 0;
+
+
+            cantidades.forEach(
+                function(cantidadInput) {
+
+                    const fila =
+                        cantidadInput.closest("tr");
+
+
+                    const precioElemento =
+                        fila.querySelector(
+                            ".precio-unitario"
+                        );
+
+
+                    const subtotalElemento =
+                        fila.querySelector(
+                            ".subtotal"
+                        );
+
+
+                    const precio =
+                        parseFloat(
+                            precioElemento.value
+                        ) || 0;
+
+
+                    const cantidad =
+                        parseInt(
+                            cantidadInput.value
+                        ) || 0;
+
+
+                    const subtotal =
+                        precio * cantidad;
+
+
+                    subtotalElemento.textContent =
+                        subtotal.toFixed(2);
+
+
+                    total += subtotal;
+
+                }
+            );
+
+
+            document.getElementById(
+                "totalPedido"
+            ).value =
+                "Q " + total.toFixed(2);
+
+        }
+
+
+        cantidades.forEach(
+            function(input) {
+
+                input.addEventListener(
+                    "input",
+                    calcularTotal
+                );
+
+
+                input.addEventListener(
+                    "change",
+                    calcularTotal
+                );
+
+            }
+        );
+
+
+        calcularTotal();
+
+    }
+);
+
+
+/*
+==============================================================
+VALIDACIÓN ANTES DE ENVIAR
+==============================================================
+
+Se verifica que exista por lo menos un producto con una
+cantidad mayor que cero.
+
+Esto evita crear pedidos vacíos.
+*/
+
+document.getElementById(
+    "formPedido"
+).addEventListener(
+    "submit",
+    function(event) {
+
+        const cantidades =
+            document.querySelectorAll(
+                ".cantidad-input"
+            );
+
+
+        let hayProducto = false;
+
+
+        cantidades.forEach(
+            function(input) {
+
+                const cantidad =
+                    parseInt(
+                        input.value
+                    ) || 0;
+
+
+                if (cantidad > 0) {
+
+                    hayProducto = true;
+
+                }
+
+            }
+        );
+
+
+        if (!hayProducto) {
+
+            event.preventDefault();
+
+            alert(
+                "Debe ingresar una cantidad mayor que 0 para al menos un producto."
+            );
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+
+</html>

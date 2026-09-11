@@ -22,30 +22,46 @@
 
         <nav class="menu">
 
-            <a href="{{ url_for('usuarios.listar_usuarios') }}"
-               class="menu-item">
-                Usuarios
-            </a>
+            {% if session['rol'] == 'ADMINISTRADOR' %}
 
-            <a href="#"
-               class="menu-item">
-                Revendedores
-            </a>
+                <a href="{{ url_for('usuarios.listar_usuarios') }}"
+                   class="menu-item">
+                    Usuarios
+                </a>
 
-            <a href="#"
-               class="menu-item">
-                Pedidos
-            </a>
+                <a href="{{ url_for('revendedores.listar_revendedores') }}"
+                   class="menu-item">
+                    Revendedores
+                </a>
 
-            <a href="#"
-               class="menu-item">
-                Inventario
-            </a>
+            {% endif %}
 
-            <a href="#"
-               class="menu-item">
-                Rutas
-            </a>
+            {% if session['rol'] == 'ADMINISTRADOR' or session['rol'] == 'REVENDEDOR' %}
+
+                <a href="{{ url_for('pedidos.listar_pedidos') }}"
+                   class="menu-item">
+                    Pedidos
+                </a>
+
+            {% endif %}
+
+            {% if session['rol'] == 'ADMINISTRADOR'  or session['rol'] == 'PRODUCCION' %}
+
+                <a href="#"
+                   class="menu-item">
+                    Inventario
+                </a>
+
+            {% endif %}
+
+            {% if session['rol'] == 'ADMINISTRADOR'  or session['rol'] == 'DESPACHO' %}
+
+                <a href="#"
+                   class="menu-item">
+                    Rutas
+                </a>
+
+            {% endif %}
 
         </nav>
 

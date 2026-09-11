@@ -199,31 +199,3 @@ def editar_usuario(id):
         "usuarios_editar.html",
         usuario=usuario
     )
-
-# ==========================
-# ELIMINAR
-# ==========================
-
-@usuarios_bp.route(
-    "/usuarios/eliminar/<int:id>"
-)
-def eliminar_usuario(id):
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        DELETE FROM usuarios
-        WHERE id_usuario=%s
-    """, (id,))
-
-    conn.commit()
-
-    cursor.close()
-    conn.close()
-
-    return redirect(
-        url_for(
-            "usuarios.listar_usuarios"
-        )
-    )

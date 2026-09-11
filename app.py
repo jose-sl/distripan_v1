@@ -9,135 +9,138 @@ from flask import (
 )
 
 from database import get_connection
+
+# Blueprints
 from routes.usuarios import usuarios_bp
+from routes.revendedores import revendedores_bp
+from routes.pedidos import pedidos_bp
 
 app = Flask(__name__)
 
-app.secret_key = "distribuidora_2026"
+app.secret_key = "distribuidora_secret_key"
 
-# ==========================================
-# BLUEPRINTS
-# ==========================================
+# =====================================================
+# REGISTRO DE BLUEPRINTS
+# =====================================================
 
-app.register_blueprint(
-    usuarios_bp
-)
+app.register_blueprint(usuarios_bp)
+app.register_blueprint(revendedores_bp)
+app.register_blueprint(pedidos_bp)
 
-# ==========================================
-
-# ==========================
+# =====================================================
 # LOGIN
-# ==========================
+# =====================================================
 
-@app.route("/", methods=["GET", "POST"])
+@app.route('/', methods=['GET', 'POST'])
 def login():
 
-    if request.method == "POST":
+    if request.method == 'POST':
 
-        usuario = request.form["usuario"]
-        password = request.form["password"]
+        usuario = request.form['usuario']
+        password = request.form['password']
 
-        conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
+        conexion = get_connection()
+        cursor = conexion.cursor(dictionary=True)
 
         cursor.execute("""
-            SELECT
-                id_usuario,
-                nombre,
-                usuario,
-                rol
+            SELECT *
             FROM usuarios
-            WHERE usuario = %s
-            AND contrasena = %s
-            AND estado = TRUE
-        """, (
+            WHERE usuario=%s
+            AND contrasena=%s
+            AND estado=1
+        """,
+        (
             usuario,
             password
         ))
 
-        user = cursor.fetchone()
+        usuario_db = cursor.fetchone()
 
         cursor.close()
-        conn.close()
+        conexion.close()
 
-        if user:
+        if usuario_db:
 
-            session["usuario_id"] = user["id_usuario"]
-            session["nombre"] = user["nombre"]
-            session["rol"] = user["rol"]
+            session['usuario_id'] = usuario_db['id_usuario']
+            session['nombre'] = usuario_db['nombre']
+            session['usuario'] = usuario_db['usuario']
+            session['rol'] = usuario_db['rol']
 
-            return redirect(
-                url_for("dashboard")
-            )
+            if session['rol'] == 'REVENDEDOR':
+                return redirect(
+                    url_for('pedidos.listar_pedidos')
+                )
+            else:
+                return redirect(
+                    url_for('dashboard')
+                )
 
         flash(
-            "Usuario o contraseña incorrectos",
-            "danger"
+            'Usuario o contraseña incorrectos',
+            'danger'
         )
 
     return render_template(
-        "login.html"
+        'login.html'
     )
 
-# ==========================
+# =====================================================
 # DASHBOARD
-# ==========================
+# =====================================================
 
-@app.route("/dashboard")
+@app.route('/dashboard')
 def dashboard():
 
-    if "usuario_id" not in session:
-        return redirect(url_for("login"))
+    if 'usuario_id' not in session:
+        return redirect(url_for('login'))
 
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    conexion = get_connection()
+    cursor = conexion.cursor(dictionary=True)
 
     cursor.execute("""
         SELECT COUNT(*) total
         FROM pedidos
         WHERE estado='PENDIENTE'
     """)
-    pedidos_pendientes = cursor.fetchone()["total"]
+    pedidos_pendientes = cursor.fetchone()['total']
 
     cursor.execute("""
         SELECT COUNT(*) total
         FROM pedidos
         WHERE estado='EN_PRODUCCION'
     """)
-    pedidos_produccion = cursor.fetchone()["total"]
+    pedidos_produccion = cursor.fetchone()['total']
 
     cursor.execute("""
         SELECT COUNT(*) total
         FROM rutas_distribucion
         WHERE estado='EN_EJECUCION'
     """)
-    rutas_activas = cursor.fetchone()["total"]
+    rutas_activas = cursor.fetchone()['total']
 
     cursor.execute("""
         SELECT COUNT(*) total
         FROM alertas
         WHERE estado='PENDIENTE'
     """)
-    alertas_pendientes = cursor.fetchone()["total"]
+    alertas_pendientes = cursor.fetchone()['total']
 
     cursor.execute("""
-        SELECT
-            id_alerta,
-            descripcion,
-            estado
+        SELECT *
         FROM alertas
         ORDER BY fecha_registro DESC
+        LIMIT 10
     """)
 
     alertas = cursor.fetchall()
 
     cursor.close()
-    conn.close()
+    conexion.close()
 
     return render_template(
-        "dashboard.html",
-        nombre=session["nombre"],
-        rol=session["rol"],
+        'dashboard.html',
+        nombre=session['nombre'],
+        rol=session['rol'],
         pedidos_pendientes=pedidos_pendientes,
         pedidos_produccion=pedidos_produccion,
         rutas_activas=rutas_activas,
@@ -155,8 +158,8 @@ def solucionar_alerta(id_alerta):
     if "usuario_id" not in session:
         return redirect(url_for("login"))
 
-    conn = get_connection()
-    cursor = conn.cursor()
+    conexion = get_connection()
+    cursor = conexion.cursor(dictionary=True)
 
     cursor.execute("""
         UPDATE alertas
@@ -164,10 +167,10 @@ def solucionar_alerta(id_alerta):
         WHERE id_alerta=%s
     """, (id_alerta,))
 
-    conn.commit()
+    conexion.commit()
 
     cursor.close()
-    conn.close()
+    conexion.close()
 
     return redirect(
         url_for("dashboard")
@@ -175,23 +178,22 @@ def solucionar_alerta(id_alerta):
 
 # ==========================
 # LOGOUT
-# ==========================
+# =====================================================
 
-@app.route("/logout")
+@app.route('/logout')
 def logout():
 
     session.clear()
 
     return redirect(
-        url_for("login")
+        url_for('login')
     )
 
-# ==========================
+# =====================================================
 # MAIN
-# ==========================
+# =====================================================
 
-if __name__ == "__main__":
-
+if __name__ == '__main__':
     app.run(
         host="0.0.0.0",
         port=5000,

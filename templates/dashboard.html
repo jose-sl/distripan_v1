@@ -32,157 +32,161 @@
 
         </div>
 
-        <!-- =====================================
-             INDICADORES
-        ====================================== -->
+        {% if session['rol'] == 'ADMINISTRADOR' %}
 
-        <section class="summary">
+            <!-- =====================================
+                 INDICADORES
+            ====================================== -->
 
-            <div class="summary-card">
+            <section class="summary">
 
-                <div class="summary-title">
-                    Pedidos Pendientes
+                <div class="summary-card">
+
+                    <div class="summary-title">
+                        Pedidos Pendientes
+                    </div>
+
+                    <div class="summary-value">
+                        {{ pedidos_pendientes }}
+                    </div>
+
                 </div>
 
-                <div class="summary-value">
-                    {{ pedidos_pendientes }}
+                <div class="summary-card">
+
+                    <div class="summary-title">
+                        En Producción
+                    </div>
+
+                    <div class="summary-value">
+                        {{ pedidos_produccion }}
+                    </div>
+
                 </div>
 
-            </div>
+                <div class="summary-card">
 
-            <div class="summary-card">
+                    <div class="summary-title">
+                        Rutas Activas
+                    </div>
 
-                <div class="summary-title">
-                    En Producción
+                    <div class="summary-value">
+                        {{ rutas_activas }}
+                    </div>
+
                 </div>
 
-                <div class="summary-value">
-                    {{ pedidos_produccion }}
+                <div class="summary-card">
+
+                    <div class="summary-title">
+                        Alertas Pendientes
+                    </div>
+
+                    <div class="summary-value">
+                        {{ alertas_pendientes }}
+                    </div>
+
                 </div>
 
-            </div>
+            </section>
 
-            <div class="summary-card">
+            <!-- =====================================
+                 ALERTAS DEL SISTEMA
+            ====================================== -->
 
-                <div class="summary-title">
-                    Rutas Activas
+            <section class="alerts-section">
+
+                <div class="section-title">
+
+                    Alertas del Sistema
+
                 </div>
 
-                <div class="summary-value">
-                    {{ rutas_activas }}
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Descripción
+                                </th>
+
+                                <th>
+                                    Estado
+                                </th>
+
+                                <th>
+                                    Acción
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for alerta in alertas %}
+
+                            <tr>
+
+                                <td>
+                                    {{ alerta.descripcion }}
+                                </td>
+
+                                <td>
+
+                                    {% if alerta.estado == 'PENDIENTE' %}
+
+                                        <span class="badge-pending">
+                                            PENDIENTE
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge-success">
+                                            ATENDIDA
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+
+                                    {% if alerta.estado == 'PENDIENTE' %}
+
+                                    <a href="{{ url_for('solucionar_alerta',
+                                        id_alerta=alerta.id_alerta) }}"
+                                       class="btn btn-success">
+
+                                        Solucionar
+
+                                    </a>
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
                 </div>
 
-            </div>
+            </section>
 
-            <div class="summary-card">
-
-                <div class="summary-title">
-                    Alertas Pendientes
-                </div>
-
-                <div class="summary-value">
-                    {{ alertas_pendientes }}
-                </div>
-
-            </div>
-
-        </section>
-
-        <!-- =====================================
-             ALERTAS DEL SISTEMA
-        ====================================== -->
-
-        <section class="alerts-section">
-
-            <div class="section-title">
-
-                Alertas del Sistema
-
-            </div>
-
-            <div class="table-wrapper">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Descripción
-                            </th>
-
-                            <th>
-                                Estado
-                            </th>
-
-                            <th>
-                                Acción
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        {% for alerta in alertas %}
-
-                        <tr>
-
-                            <td>
-                                {{ alerta.descripcion }}
-                            </td>
-
-                            <td>
-
-                                {% if alerta.estado == 'PENDIENTE' %}
-
-                                    <span class="badge-pending">
-                                        PENDIENTE
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="badge-success">
-                                        ATENDIDA
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-                            <td>
-
-                                {% if alerta.estado == 'PENDIENTE' %}
-
-                                <a href="{{ url_for('solucionar_alerta',
-                                    id_alerta=alerta.id_alerta) }}"
-                                   class="btn btn-success">
-
-                                    Solucionar
-
-                                </a>
-
-                                {% else %}
-
-                                    —
-
-                                {% endif %}
-
-                            </td>
-
-                        </tr>
-
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </section>
+        {% endif %}
 
     </main>
 

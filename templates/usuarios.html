@@ -95,30 +95,25 @@
 
                             <div class="actions">
 
-                                <a href="{{ url_for('usuarios.ver_usuario',
-                                    id=usuario.id_usuario) }}"
-                                    class="btn btn-success">
+                                {% if usuario.rol != 'ADMINISTRADOR' or usuario.nombre != 'ADMIN' %}
 
-                                    Ver
+                                    <a href="{{ url_for('usuarios.ver_usuario',
+                                        id=usuario.id_usuario) }}"
+                                        class="btn btn-success">
 
-                                </a>
+                                        Ver
 
-                                <a href="{{ url_for('usuarios.editar_usuario',
-                                    id=usuario.id_usuario) }}"
-                                    class="btn btn-primary">
+                                    </a>
 
-                                    Editar
+                                    <a href="{{ url_for('usuarios.editar_usuario',
+                                        id=usuario.id_usuario) }}"
+                                        class="btn btn-primary">
 
-                                </a>
+                                        Editar
 
-                                <a href="{{ url_for('usuarios.eliminar_usuario',
-                                    id=usuario.id_usuario) }}"
-                                    class="btn btn-danger"
-                                    onclick="return confirm('¿Desea eliminar este usuario?')">
+                                    </a>
 
-                                    Eliminar
-
-                                </a>
+                                {% endif %}
 
                             </div>
 

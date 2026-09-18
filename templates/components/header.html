@@ -56,7 +56,7 @@
 
             {% if session['rol'] == 'ADMINISTRADOR'  or session['rol'] == 'DESPACHO' %}
 
-                <a href="#"
+                <a href="{{ url_for('rutas.listar_rutas') }}"
                    class="menu-item">
                     Rutas
                 </a>
@@ -89,3 +89,15 @@
         </div>
 
     </header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+    {% endif %}
+{% endwith %}

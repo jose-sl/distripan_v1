@@ -11,7 +11,8 @@
     </title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static',
+          href="{{ url_for(
+          'static',
           filename='css/styles.css') }}">
 </head>
 
@@ -39,11 +40,11 @@
              PRODUCTOS TERMINADOS
         ====================================== -->
 
-        <div class="section-title">
+        <div class="section-title inventario-title">
             Productos Terminados
         </div>
 
-        <div class="table-wrapper">
+        <div class="table-wrapper inventario-table">
 
             <table>
 
@@ -87,17 +88,37 @@
 
                                 <div class="actions">
 
-                                    <input type="number"
-                                           name="cantidad"
-                                           min="0"
-                                           required>
+                                    {% if puede_reiniciar %}
 
-                                    <button type="submit"
-                                            class="btn btn-success">
+                                        <input type="number"
+                                               name="cantidad"
+                                               min="0"
+                                               required>
 
-                                        Actualizar
+                                        <button type="submit"
+                                                class="btn btn-success"
+                                                onclick="return confirm('¿Desea incrementar la cantidad seleccionada?')">
 
-                                    </button>
+                                            Actualizar
+
+                                        </button>
+
+                                    {% else %}
+
+                                        <input type="number"
+                                               name="cantidad"
+                                               min="0"
+                                               disabled>
+
+                                        <button type="submit"
+                                                class="btn btn-secondary"
+                                                disabled>
+
+                                            Actualizar
+
+                                        </button>
+
+                                    {% endif %}
 
                                 </div>
 
@@ -117,13 +138,29 @@
 
         <div class="buttons-center">
 
-            <a href="{{ url_for(
-                'inventario.limpiar_inventario') }}"
-               class="btn btn-danger">
+            {% if puede_reiniciar %}
 
-                Limpiar
+                <a href="{{ url_for(
+                    'inventario.limpiar_inventario') }}"
+                   class="btn btn-danger"
+                   onclick="return confirmarReinicio()">
 
-            </a>
+                    Reiniciar Cantidades
+
+                </a>
+
+            {% else %}
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    disabled>
+
+                    Reiniciar Cantidades
+
+                </button>
+
+            {% endif %}
 
         </div>
 
@@ -131,13 +168,13 @@
              MATERIAS PRIMAS
         ====================================== -->
 
-        <div class="section-title">
+        <div class="section-title inventario-title">
 
             Materias Primas
 
         </div>
 
-        <div class="table-wrapper">
+        <div class="table-wrapper inventario-table">
 
             <table>
 
@@ -174,7 +211,7 @@
                         </td>
 
                         <td>
-                            {{ "%.2f"|format(
+                            {{ "%.4f"|format(
                                 materia.requerido
                             ) }}
                         </td>
@@ -217,17 +254,56 @@
 
         </div>
 
+        <!-- =====================================
+             PRODUCCIÓN
+        ====================================== -->
+
         <div class="buttons-center">
 
-            <a href="{{ url_for(
-                'inventario.iniciar_produccion') }}"
-               class="btn btn-primary">
+            {% if produccion_activa %}
 
-                Iniciar Producción
+                <a href="{{ url_for(
+                    'inventario.finalizar_produccion') }}"
+                   class="btn btn-danger"
+                   onclick="return confirmarFinalizarProduccion()">
 
-            </a>
+                    Finalizar Producción
+
+                </a>
+
+            {% else %}
+
+                {% if hay_pendientes %}
+
+                    <a href="{{ url_for(
+                        'inventario.iniciar_produccion') }}"
+                       class="btn btn-success"
+                       onclick="return confirmarProduccion()">
+
+                        Iniciar Producción
+
+                    </a>
+
+                {% else %}
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        disabled>
+
+                        Iniciar Producción
+
+                    </button>
+
+                {% endif %}
+
+            {% endif %}
 
         </div>
+
+        <!-- =====================================
+             REGRESAR
+        ====================================== -->
 
         <div class="buttons-center">
 
@@ -243,6 +319,68 @@
     </main>
 
 </div>
+
+<!-- ==========================
+     JAVASCRIPT
+========================== -->
+
+<script>
+
+function confirmarReinicio() {
+
+    if (
+        confirm(
+            'Va a reiniciar a 0 todas las cantidades'
+        )
+    ) {
+
+        return confirm(
+            '¿Está completamente seguro? Esta acción es irreversible.'
+        );
+
+    }
+
+    return false;
+
+}
+
+function confirmarProduccion() {
+
+    if (
+        confirm(
+            'Va a iniciar la producción de los productos solicitados'
+        )
+    ) {
+
+        return confirm(
+            '¿Está completamente seguro de iniciar la producción?'
+        );
+
+    }
+
+    return false;
+
+}
+
+function confirmarFinalizarProduccion() {
+
+    if (
+        confirm(
+            '¿Desea finalizar la producción actual?'
+        )
+    ) {
+
+        return confirm(
+            'Todos los pedidos pasarán a estar listos para ser entregados.'
+        );
+
+    }
+
+    return false;
+
+}
+
+</script>
 
 </body>
 </html>

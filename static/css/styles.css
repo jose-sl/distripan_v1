@@ -443,6 +443,11 @@ tr:hover{
     font-weight:bold;
 }
 
+.badge-other{
+    color: #2b49c0;
+    font-weight:bold;
+}
+
 /* =====================================================
    CRUD
 ===================================================== */
@@ -569,4 +574,98 @@ tr:hover{
         width:100%;
         max-width:250px;
     }
+}
+
+/* =====================================================
+   INVENTARIO - TABLAS COMPACTAS
+===================================================== */
+
+.table-wrapper table{
+    font-size:14px;
+}
+
+.table-wrapper th{
+    padding:8px 10px;
+}
+
+.table-wrapper td{
+    padding:6px 10px;
+}
+
+/* Columnas numéricas más compactas */
+
+.table-wrapper td:nth-child(2),
+.table-wrapper td:nth-child(3),
+.table-wrapper td:nth-child(4),
+.table-wrapper td:nth-child(5){
+    white-space:nowrap;
+}
+
+/* Área de acciones */
+
+.actions{
+    gap:6px;
+    flex-wrap:nowrap;
+}
+
+/* Inputs dentro de tablas */
+
+.actions input[type="number"]{
+    width:80px;
+    height:34px;
+    padding:4px 8px;
+    font-size:13px;
+    border:1px solid #d9c5a7;
+    border-radius:6px;
+}
+
+/* Botones de actualización más pequeños */
+
+.actions .btn{
+    min-width:100px;
+    height:34px;
+    padding:0 12px;
+    font-size:13px;
+}
+
+/* Reduce espacio entre secciones */
+
+.section-title{
+    margin-bottom:10px;
+}
+
+.table-wrapper{
+    margin-bottom:15px;
+}
+
+/* Tablas más compactas visualmente */
+
+table{
+    line-height:1.2;
+}
+
+/* Hover más sutil */
+
+tr:hover{
+    background:#fcfaf7;
+}
+
+.inventario-title{
+    max-width:900px;
+    margin:0 auto 15px auto;
+}
+
+.inventario-table{
+    max-width:900px;
+    margin:0 auto;
+}
+
+.btn-secondary{
+    background:#b5b5b5;
+    color:#ffffff;
+    cursor:not-allowed;
+}
+
+.btn-secondary:hover{
+    background:#b5b5b5;
 }

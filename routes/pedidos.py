@@ -54,12 +54,38 @@ def listar_pedidos():
 
     pedidos = cursor.fetchall()
 
+    # ======================================
+    # TIEMPO DE ESPERA
+    # ======================================
+
+    cursor.execute("""
+                SELECT COUNT(*) total
+                FROM pedidos
+                WHERE estado in ('EN_PRODUCCION','LISTO_PARA_DESPACHO','EN_RUTA')
+            """)
+
+    esperar_liberacion = (
+            cursor.fetchone()["total"] > 0
+    )
+
+    cursor.close()
+    conexion.close()
+
+    if esperar_liberacion:
+        flash(
+            "Puede realizar sus pedidos en los siguientes horarios: "
+            "pedidos para la mañana de 4 de la tarde en adelante y "
+            "pedidos para la tarde de 5 a 11 de la mañana.",
+            "danger"
+        )
+
     cursor.close()
     conexion.close()
 
     return render_template(
         "pedidos.html",
-        pedidos=pedidos
+        pedidos=pedidos,
+        esperar_liberacion=esperar_liberacion
     )
 
 

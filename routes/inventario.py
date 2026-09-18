@@ -44,7 +44,13 @@ def inventario():
                     FROM detalle_pedido dp
                     INNER JOIN pedidos pe
                         ON pe.id_pedido = dp.id_pedido
-                    WHERE pe.estado='PENDIENTE'
+                    WHERE pe.estado IN
+                    (
+                        'PENDIENTE',
+                        'EN_PRODUCCION',
+                        'LISTO_PARA_DESPACHO',
+                        'EN_RUTA'
+                    )
                     AND dp.id_producto = p.id_producto
                 ),
                 0
@@ -95,13 +101,78 @@ def inventario():
 
     materias = cursor.fetchall()
 
+    # ======================================
+    # PEDIDOS PENDIENTES
+    # ======================================
+
+    cursor.execute("""
+        SELECT COUNT(*) total
+        FROM pedidos
+        WHERE estado='PENDIENTE'
+    """)
+
+    hay_pendientes = (
+        cursor.fetchone()["total"] > 0
+    )
+
+    # ======================================
+    # PRODUCCIÓN ACTIVA
+    # ======================================
+
+    cursor.execute("""
+        SELECT COUNT(*) total
+        FROM pedidos
+        WHERE estado='EN_PRODUCCION'
+    """)
+
+    produccion_activa = (
+        cursor.fetchone()["total"] > 0
+    )
+
+    # ======================================
+    # REINICIO DISPONIBLE
+    # ======================================
+
+    cursor.execute("""
+        SELECT COUNT(*) total
+        FROM pedidos
+        WHERE estado='EN_PRODUCCION'
+    """)
+
+    puede_reiniciar = (
+        cursor.fetchone()["total"] > 0
+    )
+
+    # ======================================
+    # PENDIENTE DE DESPACHO O EN RUTA
+    # ======================================
+
+    cursor.execute("""
+            SELECT COUNT(*) total
+            FROM pedidos
+            WHERE estado in ('LISTO_PARA_DESPACHO','EN_RUTA')
+        """)
+
+    pendiente_entregar = (
+            cursor.fetchone()["total"] > 0
+    )
+
     cursor.close()
     conexion.close()
+
+    if pendiente_entregar:
+        flash(
+            "Hay pedidos pendientes de entregar.",
+            "danger"
+        )
 
     return render_template(
         "inventario.html",
         productos=productos,
-        materias=materias
+        materias=materias,
+        hay_pendientes=hay_pendientes,
+        produccion_activa=produccion_activa,
+        puede_reiniciar=puede_reiniciar
     )
 
 # ==========================================
@@ -225,7 +296,163 @@ def limpiar_inventario():
 def iniciar_produccion():
 
     conexion = get_connection()
-    cursor = conexion.cursor()
+    cursor = conexion.cursor(dictionary=True)
+
+    # ======================================
+    # CALCULAR CONSUMO DE MATERIAS PRIMAS
+    # ======================================
+
+    cursor.execute("""
+        SELECT
+            mp.id_materia,
+            mp.nombre,
+            mp.stock_actual,
+            mp.stock_minimo,
+            mp.unidad_medida,
+
+            COALESCE(
+                SUM(
+                    rp.cantidad_requerida *
+                    dp.cantidad
+                ),
+                0
+            ) AS requerido
+
+        FROM materias_primas mp
+
+        LEFT JOIN recetas_producto rp
+            ON mp.id_materia = rp.id_materia
+
+        LEFT JOIN detalle_pedido dp
+            ON rp.id_producto = dp.id_producto
+
+        LEFT JOIN pedidos p
+            ON dp.id_pedido = p.id_pedido
+            AND p.estado='PENDIENTE'
+
+        GROUP BY
+            mp.id_materia,
+            mp.nombre,
+            mp.stock_actual,
+            mp.stock_minimo,
+            mp.unidad_medida
+    """)
+
+    materias = cursor.fetchall()
+
+    # ======================================
+    # VERIFICAR MATERIA PRIMA SUFICIENTE
+    # ======================================
+
+    for materia in materias:
+
+        requerido = float(
+            materia["requerido"] or 0
+        )
+
+        nuevo_stock = (
+            float(materia["stock_actual"])
+            - requerido
+        )
+
+        if nuevo_stock < 0:
+
+            descripcion = (
+                f"No existe suficiente "
+                f"{materia['nombre']} "
+                f"para iniciar la producción."
+            )
+
+            cursor.execute("""
+                INSERT INTO alertas
+                (
+                    descripcion,
+                    estado,
+                    fecha_registro
+                )
+                VALUES
+                (
+                    %s,
+                    'PENDIENTE',
+                    NOW()
+                )
+            """,
+            (descripcion,))
+
+            flash(
+                descripcion,
+                "danger"
+            )
+
+            conexion.commit()
+
+            cursor.close()
+            conexion.close()
+
+            return redirect(
+                url_for("dashboard")
+            )
+
+    # ======================================
+    # DESCONTAR INVENTARIO
+    # ======================================
+
+    for materia in materias:
+
+        requerido = float(
+            materia["requerido"] or 0
+        )
+
+        nuevo_stock = (
+            float(materia["stock_actual"])
+            - requerido
+        )
+
+        cursor.execute("""
+            UPDATE materias_primas
+            SET stock_actual=%s
+            WHERE id_materia=%s
+        """,
+        (
+            nuevo_stock,
+            materia["id_materia"]
+        ))
+
+        # ==================================
+        # ALERTA STOCK BAJO
+        # ==================================
+
+        if nuevo_stock <= materia["stock_minimo"]:
+
+            descripcion = (
+                f"La materia prima "
+                f"'{materia['nombre']}' "
+                f"se encuentra por debajo "
+                f"del stock mínimo. "
+                f"Existencia actual: "
+                f"{nuevo_stock:.4f} "
+                f"{materia['unidad_medida']}"
+            )
+
+            cursor.execute("""
+                INSERT INTO alertas
+                (
+                    descripcion,
+                    estado,
+                    fecha_registro
+                )
+                VALUES
+                (
+                    %s,
+                    'PENDIENTE',
+                    NOW()
+                )
+            """,
+            (descripcion,))
+
+    # ======================================
+    # CAMBIAR PEDIDOS
+    # ======================================
 
     cursor.execute("""
         UPDATE pedidos
@@ -244,5 +471,43 @@ def iniciar_produccion():
     )
 
     return redirect(
-        url_for("inventario.inventario")
+        url_for("dashboard")
+    )
+
+# ==========================================
+# FINALIZAR PRODUCCIÓN
+# ==========================================
+
+@inventario_bp.route(
+    "/inventario/finalizar"
+)
+def finalizar_produccion():
+
+    conexion = get_connection()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        UPDATE pedidos
+        SET estado='LISTO_PARA_DESPACHO'
+        WHERE estado='EN_PRODUCCION'
+    """)
+
+    afectados = cursor.rowcount
+
+    conexion.commit()
+
+    cursor.close()
+    conexion.close()
+
+    if afectados > 0:
+
+        flash(
+            "Producción finalizada correctamente.",
+            "success"
+        )
+
+    return redirect(
+        url_for(
+            "inventario.inventario"
+        )
     )

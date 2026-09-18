@@ -36,12 +36,27 @@
 
         <div class="toolbar">
 
-            <a href="{{ url_for('pedidos.agregar_pedido') }}"
-               class="btn btn-primary">
+            {% if esperar_liberacion %}
 
-                Agregar Pedido
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    disabled>
 
-            </a>
+                    Agregar Pedido
+
+                </button>
+
+            {% else %}
+
+                <a href="{{ url_for('pedidos.agregar_pedido') }}"
+                   class="btn btn-primary">
+
+                    Agregar Pedido
+
+                </a>
+
+            {% endif %}
 
         </div>
 
@@ -103,10 +118,16 @@
                                     {{ pedido.estado }}
                                 </span>
 
-                            {% else %}
+                            {% elif pedido.estado == 'CANCELADO' %}
 
                                 <span class="badge-pending">
-                                    {{ pedido.estado }}
+                                    {{ pedido.estado.replace('_',' ') }}
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge-other">
+                                    {{ pedido.estado.replace('_',' ') }}
                                 </span>
 
                             {% endif %}

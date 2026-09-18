@@ -9,6 +9,7 @@ from flask import (
 )
 
 from database import get_connection
+from routes.rutas import rutas_bp
 
 # Blueprints
 from routes.usuarios import usuarios_bp
@@ -28,6 +29,7 @@ app.register_blueprint(usuarios_bp)
 app.register_blueprint(revendedores_bp)
 app.register_blueprint(pedidos_bp)
 app.register_blueprint(inventario_bp)
+app.register_blueprint(rutas_bp)
 
 # =====================================================
 # LOGIN
@@ -130,8 +132,8 @@ def dashboard():
     cursor.execute("""
         SELECT *
         FROM alertas
-        ORDER BY fecha_registro DESC
-        LIMIT 10
+        ORDER BY FIELD(estado, 'PENDIENTE', 'ATENDIDA')
+        LIMIT 50
     """)
 
     alertas = cursor.fetchall()

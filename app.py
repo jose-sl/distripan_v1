@@ -16,6 +16,9 @@ from routes.usuarios import usuarios_bp
 from routes.revendedores import revendedores_bp
 from routes.pedidos import pedidos_bp
 from routes.inventario import inventario_bp
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+from werkzeug.wrappers import Response
+from werkzeug.serving import run_simple
 from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
@@ -204,12 +207,25 @@ def logout():
     )
 
 # =====================================================
+# PREFIJO UNIVERSAL
+# =====================================================
+
+app_prefijada = DispatcherMiddleware(
+    Response("Página no encontrada", status=404),
+    {
+        "/distri_pan_v1": app
+    }
+)
+
+# =====================================================
 # MAIN
 # =====================================================
 
 if __name__ == '__main__':
-    app.run(
-        host="0.0.0.0",
+    run_simple(
+        hostname="0.0.0.0",
         port=5000,
-        debug=True
+        application=app_prefijada,
+        use_debugger=True,
+        use_reloader=True
     )

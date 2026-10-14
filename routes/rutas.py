@@ -7,32 +7,26 @@ from flask import (
     flash
 )
 
+from routes.permisos import roles_requeridos
 from database import get_connection
 
 import folium
 from folium.plugins import PolyLineTextPath
 import openrouteservice
 
-from config import ORS_API_KEY
+from config import ORS_API_KEY, LAT_ORIGEN, LON_ORIGEN
 
 rutas_bp = Blueprint(
     "rutas",
     __name__
 )
 
-
-# ==========================================
-# PUNTO DE ORIGEN
-# ==========================================
-
-LAT_ORIGEN = 14.569487
-LON_ORIGEN = -90.498074
-
 # ==========================================
 # MOSTRAR RUTAS
 # ==========================================
 
 @rutas_bp.route("/rutas")
+@roles_requeridos("ADMINISTRADOR","DESPACHO")
 def listar_rutas():
 
     if "usuario_id" not in session:
@@ -371,6 +365,7 @@ def listar_rutas():
 # ==========================================
 
 @rutas_bp.route("/rutas/iniciar")
+@roles_requeridos("ADMINISTRADOR","DESPACHO")
 def iniciar_ruta():
 
     if "usuario_id" not in session:
@@ -428,6 +423,7 @@ def iniciar_ruta():
 # ==========================================
 
 @rutas_bp.route("/rutas/finalizar")
+@roles_requeridos("ADMINISTRADOR","DESPACHO")
 def finalizar_ruta():
 
     if "usuario_id" not in session:

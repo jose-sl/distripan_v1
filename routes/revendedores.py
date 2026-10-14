@@ -8,20 +8,20 @@ from flask import (
     session
 )
 
+from routes.permisos import roles_requeridos
 from database import get_connection
-
 
 revendedores_bp = Blueprint(
     'revendedores',
     __name__
 )
 
-
 # =====================================================
 # LISTAR
 # =====================================================
 
 @revendedores_bp.route('/revendedores')
+@roles_requeridos("ADMINISTRADOR")
 def listar_revendedores():
 
     if 'usuario_id' not in session:
@@ -60,10 +60,8 @@ def listar_revendedores():
 # AGREGAR
 # =====================================================
 
-@revendedores_bp.route(
-    '/revendedores/agregar',
-    methods=['GET', 'POST']
-)
+@revendedores_bp.route('/revendedores/agregar', methods=['GET', 'POST'])
+@roles_requeridos("ADMINISTRADOR")
 def agregar_revendedor():
 
     if 'usuario_id' not in session:
@@ -199,10 +197,8 @@ def agregar_revendedor():
 # EDITAR
 # =====================================================
 
-@revendedores_bp.route(
-    '/revendedores/editar/<int:id>',
-    methods=['GET', 'POST']
-)
+@revendedores_bp.route('/revendedores/editar/<int:id>', methods=['GET', 'POST'])
+@roles_requeridos("ADMINISTRADOR")
 def editar_revendedor(id):
 
     if 'usuario_id' not in session:
@@ -328,9 +324,8 @@ def editar_revendedor(id):
 # VER
 # =====================================================
 
-@revendedores_bp.route(
-    '/revendedores/ver/<int:id>'
-)
+@revendedores_bp.route('/revendedores/ver/<int:id>')
+@roles_requeridos("ADMINISTRADOR")
 def ver_revendedor(id):
 
     if 'usuario_id' not in session:

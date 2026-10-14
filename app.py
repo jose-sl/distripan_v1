@@ -16,6 +16,7 @@ from routes.usuarios import usuarios_bp
 from routes.revendedores import revendedores_bp
 from routes.pedidos import pedidos_bp
 from routes.inventario import inventario_bp
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 
@@ -50,12 +51,11 @@ def login():
             SELECT *
             FROM usuarios
             WHERE usuario=%s
-            AND contrasena=%s
-            AND estado=1
+            AND estado=%s
         """,
         (
             usuario,
-            password
+            1
         ))
 
         usuario_db = cursor.fetchone()
@@ -65,19 +65,29 @@ def login():
 
         if usuario_db:
 
-            session['usuario_id'] = usuario_db['id_usuario']
-            session['nombre'] = usuario_db['nombre']
-            session['usuario'] = usuario_db['usuario']
-            session['rol'] = usuario_db['rol']
+            if check_password_hash(usuario_db['contrasena'], password):
 
-            if session['rol'] == 'REVENDEDOR':
-                return redirect(
-                    url_for('pedidos.listar_pedidos')
-                )
-            else:
-                return redirect(
-                    url_for('dashboard')
-                )
+                session['usuario_id'] = usuario_db['id_usuario']
+                session['nombre'] = usuario_db['nombre']
+                session['usuario'] = usuario_db['usuario']
+                session['rol'] = usuario_db['rol']
+
+                if session['rol'] == 'REVENDEDOR':
+                    return redirect(
+                        url_for('pedidos.listar_pedidos')
+                    )
+                elif session['rol'] == 'DESPACHO':
+                    return redirect(
+                        url_for('rutas.listar_rutas')
+                    )
+                elif session['rol'] == 'PRODUCCION':
+                    return redirect(
+                        url_for('inventario.inventario')
+                    )
+                else:
+                    return redirect(
+                        url_for('dashboard')
+                    )
 
         flash(
             'Usuario o contraseña incorrectos',

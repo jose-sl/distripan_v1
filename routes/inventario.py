@@ -8,6 +8,7 @@ from flask import (
     flash
 )
 
+from routes.permisos import roles_requeridos
 from database import get_connection
 
 inventario_bp = Blueprint(
@@ -20,6 +21,7 @@ inventario_bp = Blueprint(
 # ==========================================
 
 @inventario_bp.route("/inventario")
+@roles_requeridos("ADMINISTRADOR","PRODUCCION")
 def inventario():
 
     if "usuario_id" not in session:
@@ -179,10 +181,8 @@ def inventario():
 # ACTUALIZAR PRODUCTO TERMINADO
 # ==========================================
 
-@inventario_bp.route(
-    "/inventario/producto/<int:id>",
-    methods=["POST"]
-)
+@inventario_bp.route("/inventario/producto/<int:id>", methods=["POST"])
+@roles_requeridos("ADMINISTRADOR","PRODUCCION")
 def actualizar_producto(id):
 
     cantidad = int(
@@ -221,10 +221,8 @@ def actualizar_producto(id):
 # ACTUALIZAR MATERIA PRIMA
 # ==========================================
 
-@inventario_bp.route(
-    "/inventario/materia/<int:id>",
-    methods=["POST"]
-)
+@inventario_bp.route("/inventario/materia/<int:id>", methods=["POST"])
+@roles_requeridos("ADMINISTRADOR","PRODUCCION")
 def actualizar_materia(id):
 
     cantidad = float(
@@ -264,6 +262,7 @@ def actualizar_materia(id):
 # ==========================================
 
 @inventario_bp.route("/inventario/limpiar")
+@roles_requeridos("ADMINISTRADOR","PRODUCCION")
 def limpiar_inventario():
 
     conexion = get_connection()
@@ -293,6 +292,7 @@ def limpiar_inventario():
 # ==========================================
 
 @inventario_bp.route("/inventario/iniciar")
+@roles_requeridos("ADMINISTRADOR","PRODUCCION")
 def iniciar_produccion():
 
     conexion = get_connection()
@@ -478,13 +478,97 @@ def iniciar_produccion():
 # FINALIZAR PRODUCCIÓN
 # ==========================================
 
-@inventario_bp.route(
-    "/inventario/finalizar"
-)
+@inventario_bp.route("/inventario/finalizar")
+@roles_requeridos("ADMINISTRADOR","PRODUCCION")
 def finalizar_produccion():
 
     conexion = get_connection()
-    cursor = conexion.cursor()
+    cursor = conexion.cursor(dictionary=True)
+
+    # ======================================
+    # VERIFICAR PRODUCTOS TERMINADOS
+    # ======================================
+
+    cursor.execute("""
+                SELECT
+                    p.id_producto,
+                    p.nombre,
+                    p.stock_actual,
+
+                    COALESCE(
+                        (
+                            SELECT SUM(dp.cantidad)
+                            FROM detalle_pedido dp
+
+                            INNER JOIN pedidos pe
+                                ON pe.id_pedido = dp.id_pedido
+
+                            WHERE pe.estado IN (
+                                'PENDIENTE',
+                                'EN_PRODUCCION',
+                                'LISTO_PARA_DESPACHO',
+                                'EN_RUTA'
+                            )
+
+                            AND dp.id_producto = p.id_producto
+                        ),
+                        0
+                    ) AS solicitado
+
+                FROM productos p
+
+                WHERE p.estado = 1
+
+                ORDER BY p.nombre
+            """)
+
+    productos = cursor.fetchall()
+
+    # ======================================
+    # VALIDAR CANTIDADES
+    # ======================================
+
+    productos_pendientes = []
+
+    for producto in productos:
+
+        cantidad = int(
+            producto["stock_actual"] or 0
+        )
+
+        solicitado = int(
+            producto["solicitado"] or 0
+        )
+
+        if cantidad < solicitado:
+            productos_pendientes.append(
+                producto["nombre"]
+            )
+
+    # ======================================
+    # CANCELAR FINALIZACIÓN SI FALTA STOCK
+    # ======================================
+
+    if productos_pendientes:
+        nombres = ", ".join(
+            productos_pendientes
+        )
+
+        flash(
+            "No se puede finalizar la producción. "
+            "Aún hay productos que no cumplen "
+            "con el total solicitado. "
+            f"Productos pendientes: {nombres}.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("inventario.inventario")
+        )
+
+    # ======================================
+    # FINALIZAR PRODUCCIÓN
+    # ======================================
 
     cursor.execute("""
         UPDATE pedidos

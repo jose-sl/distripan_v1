@@ -307,12 +307,16 @@
 
         <div class="buttons-center">
 
-            <a href="{{ url_for('dashboard') }}"
-               class="btn btn-primary">
+            {% if session['rol'] != 'PRODUCCION' %}
 
-                Regresar
+                <a href="{{ url_for('dashboard') }}"
+                   class="btn btn-primary">
 
-            </a>
+                    Regresar
+
+                </a>
+
+            {% endif %}
 
         </div>
 

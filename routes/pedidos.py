@@ -1,14 +1,28 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    session
+)
+
+from routes.permisos import roles_requeridos
 from database import get_connection
 
-pedidos_bp = Blueprint("pedidos", __name__, url_prefix="/pedidos")
+pedidos_bp = Blueprint(
+    "pedidos",
+    __name__
+)
 
 
 # ==========================================================
 # LISTAR PEDIDOS
 # ==========================================================
 
-@pedidos_bp.route("/")
+@pedidos_bp.route("/pedidos")
+@roles_requeridos("ADMINISTRADOR","REVENDEDOR")
 def listar_pedidos():
 
     if "usuario_id" not in session:
@@ -33,7 +47,7 @@ def listar_pedidos():
             INNER JOIN revendedores r
                 ON p.id_revendedor = r.id_revendedor
             WHERE p.id_usuario = %s
-            AND P.fecha_pedido >= DATE_SUB(CURDATE(), INTERVAL 5 DAY)
+            AND p.fecha_pedido >= DATE_SUB(CURDATE(), INTERVAL 5 DAY)
             ORDER BY FIELD(p.estado, 'PENDIENTE', 'EN_PRODUCCION', 'LISTO_PARA_DESPACHO', 'EN_RUTA', 'ENTREGADO', 'CANCELADO')
         """, (usuario_id,))
 
@@ -49,6 +63,7 @@ def listar_pedidos():
             FROM pedidos p
             INNER JOIN revendedores r
                 ON p.id_revendedor = r.id_revendedor
+            WHERE p.fecha_pedido >= DATE_SUB(CURDATE(), INTERVAL 5 DAY)
             ORDER BY FIELD(p.estado, 'PENDIENTE', 'EN_PRODUCCION', 'LISTO_PARA_DESPACHO', 'EN_RUTA', 'ENTREGADO', 'CANCELADO')
         """)
 
@@ -79,9 +94,6 @@ def listar_pedidos():
             "danger"
         )
 
-    cursor.close()
-    conexion.close()
-
     return render_template(
         "pedidos.html",
         pedidos=pedidos,
@@ -93,7 +105,8 @@ def listar_pedidos():
 # VER PEDIDO
 # ==========================================================
 
-@pedidos_bp.route("/ver/<int:id>", methods=["GET", "POST"])
+@pedidos_bp.route("/pedidos/ver/<int:id>", methods=["GET", "POST"])
+@roles_requeridos("ADMINISTRADOR","REVENDEDOR")
 def ver_pedido(id):
 
     if "usuario_id" not in session:
@@ -204,7 +217,8 @@ def ver_pedido(id):
 # AGREGAR PEDIDO
 # ==========================================================
 
-@pedidos_bp.route("/agregar", methods=["GET", "POST"])
+@pedidos_bp.route("/pedidos/agregar", methods=["GET", "POST"])
+@roles_requeridos("ADMINISTRADOR","REVENDEDOR")
 def agregar_pedido():
 
     if "usuario_id" not in session:
@@ -536,7 +550,8 @@ def agregar_pedido():
 # EDITAR PEDIDO
 # ==========================================================
 
-@pedidos_bp.route("/editar/<int:id>", methods=["GET", "POST"])
+@pedidos_bp.route("/pedidos/editar/<int:id>", methods=["GET", "POST"])
+@roles_requeridos("ADMINISTRADOR","REVENDEDOR")
 def editar_pedido(id):
 
     if "usuario_id" not in session:
@@ -813,7 +828,8 @@ def editar_pedido(id):
 # CANCELAR PEDIDO
 # ==========================================================
 
-@pedidos_bp.route("/cancelar/<int:id>")
+@pedidos_bp.route("/pedidos/cancelar/<int:id>")
+@roles_requeridos("ADMINISTRADOR","REVENDEDOR")
 def cancelar_pedido(id):
 
     if "usuario_id" not in session:

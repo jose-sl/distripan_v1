@@ -7,7 +7,9 @@ from flask import (
     flash
 )
 
+from routes.permisos import roles_requeridos
 from database import get_connection
+from werkzeug.security import generate_password_hash
 
 usuarios_bp = Blueprint(
     "usuarios",
@@ -19,32 +21,52 @@ usuarios_bp = Blueprint(
 # ==========================
 
 @usuarios_bp.route("/usuarios")
+@roles_requeridos("ADMINISTRADOR")
 def listar_usuarios():
 
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        SELECT *
-        FROM usuarios
-        ORDER BY nombre
-    """)
+        try:
+            cursor.execute("""
+                SELECT *
+                FROM usuarios
+                ORDER BY nombre
+            """)
 
-    usuarios = cursor.fetchall()
+            usuarios = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
+            cursor.close()
+        except:
+            conn.rollback()
+            flash(
+                "No fue posible consultar la base de datos.",
+                "danger")
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    except:
+        flash(
+            "No fue posible conectarse a la base de datos.",
+            "danger"
+        )
 
     return render_template(
         "usuarios.html",
         usuarios=usuarios
     )
 
+
+
 # ==========================
 # VER
 # ==========================
 
 @usuarios_bp.route("/usuarios/ver/<int:id>")
+@roles_requeridos("ADMINISTRADOR")
 def ver_usuario(id):
 
     conn = get_connection()
@@ -70,10 +92,8 @@ def ver_usuario(id):
 # AGREGAR
 # ==========================
 
-@usuarios_bp.route(
-    "/usuarios/agregar",
-    methods=["GET","POST"]
-)
+@usuarios_bp.route("/usuarios/agregar", methods=["GET","POST"])
+@roles_requeridos("ADMINISTRADOR")
 def agregar_usuario():
 
     if request.method == "POST":
@@ -114,7 +134,7 @@ def agregar_usuario():
         """, (
             request.form["nombre"],
             request.form["usuario"],
-            request.form["contrasena"],
+            generate_password_hash(request.form["contrasena"]),
             request.form["rol"],
             request.form["estado"]
         ))
@@ -138,10 +158,8 @@ def agregar_usuario():
 # EDITAR
 # ==========================
 
-@usuarios_bp.route(
-    "/usuarios/editar/<int:id>",
-    methods=["GET","POST"]
-)
+@usuarios_bp.route("/usuarios/editar/<int:id>", methods=["GET","POST"])
+@roles_requeridos("ADMINISTRADOR")
 def editar_usuario(id):
 
     conn = get_connection()
@@ -172,7 +190,7 @@ def editar_usuario(id):
                 SET contrasena=%s
                 WHERE id_usuario=%s
             """, (
-                request.form["contrasena"],
+                generate_password_hash(request.form["contrasena"]),
                 id
             ))
 

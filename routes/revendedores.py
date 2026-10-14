@@ -179,6 +179,7 @@ def agregar_revendedor():
             usuario
         FROM usuarios
         WHERE estado=1
+        AND rol='REVENDEDOR'
         ORDER BY nombre
     """)
 
@@ -304,6 +305,7 @@ def editar_revendedor(id):
             usuario
         FROM usuarios
         WHERE estado=1
+        AND rol='REVENDEDOR'
         ORDER BY nombre
     """)
 

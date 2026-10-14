@@ -309,33 +309,42 @@ def iniciar_produccion():
             mp.stock_actual,
             mp.stock_minimo,
             mp.unidad_medida,
-
+        
             COALESCE(
                 SUM(
-                    rp.cantidad_requerida *
-                    dp.cantidad
+                    rp.cantidad_requerida * dp.cantidad
                 ),
                 0
             ) AS requerido
-
+        
         FROM materias_primas mp
-
+        
         LEFT JOIN recetas_producto rp
             ON mp.id_materia = rp.id_materia
-
-        LEFT JOIN detalle_pedido dp
+        
+        LEFT JOIN (
+            SELECT
+                dp.id_producto,
+                dp.cantidad
+            FROM detalle_pedido dp
+        
+            INNER JOIN pedidos p
+                ON dp.id_pedido = p.id_pedido
+        
+            WHERE p.estado = 'PENDIENTE'
+        
+        ) dp
             ON rp.id_producto = dp.id_producto
-
-        LEFT JOIN pedidos p
-            ON dp.id_pedido = p.id_pedido
-            AND p.estado='PENDIENTE'
-
+        
         GROUP BY
             mp.id_materia,
             mp.nombre,
             mp.stock_actual,
             mp.stock_minimo,
             mp.unidad_medida
+        
+        ORDER BY
+            mp.nombre;
     """)
 
     materias = cursor.fetchall()
